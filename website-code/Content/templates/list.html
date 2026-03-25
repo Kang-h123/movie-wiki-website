@@ -1,0 +1,15 @@
+<h1>List</h1>
+
+<a href="/add">Add</a>
+
+<ul>
+    {% for i in items %}
+    <li>
+        {{ i.title }}
+
+        <a href="/item/{{ i.id }}">View</a>
+        <a href="/edit/{{ i.id }}">Edit</a>
+        <a href="/delete/{{ i.id }}">Delete</a>
+    </li>
+    {% endfor %}
+</ul>
