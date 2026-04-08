@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block title %}My Favorites - {{ config.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>⭐ My Favorite Movies</h1>
+    <p>Your personal collection of favorite films</p>
+</div>
+
+<!-- Favorite Movies -->
+{% if favorite_movies %}
+<div class="movies-grid">
+    {% for movie in favorite_movies %}
+    <div class="movie-card">
+        <div class="movie-poster">
+            {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }}"
+                 onerror="this.src='https://via.placeholder.com/300x450?text=No+Poster'">
+            {% else %}
+            <div class="placeholder-poster">{{ config.emoji }}</div>
+            {% endif %}
+            <div class="movie-rating-badge">⭐ {{ movie.rating }}</div>
+            <div class="movie-overlay">
+                <a href="/movie/{{ movie.id }}" class="btn btn-sm">View Details</a>
+                <button class="btn btn-sm btn-secondary" onclick="removeFavorite({{ movie.id }})">
+                    Remove
+                </button>
+            </div>
+        </div>
+        <div class="movie-info">
+            <h3 class="movie-title">{{ movie.title }}</h3>
+            <div class="movie-meta">
+                <span class="movie-year">{{ movie.release_date[:4] }}</span>
+                <span class="movie-genre">{{ movie.genre }}</span>
+                <span class="movie-runtime">{{ movie.runtime }} min</span>
+            </div>
+            <div class="movie-age-rating rating-{{ movie.age_rating|lower|replace('-', '') }}">
+                {{ movie.age_rating }}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">⭐</div>
+    <h2>No favorite movies yet</h2>
+    <p>Start adding movies to your favorites!</p>
+    <a href="/browse" class="btn btn-primary">Browse Movies</a>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+function removeFavorite(movieId) {
+    if (confirm("Are you sure you want to remove this from favorites?")) {
+        fetch(`/favorites/toggle/${movieId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

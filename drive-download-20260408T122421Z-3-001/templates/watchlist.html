@@ -1,0 +1,111 @@
+{% extends "base.html" %}
+
+{% block title %}My Watchlist - {{ config.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>📋 My Watchlist</h1>
+    <p>Track your movie watching progress</p>
+</div>
+
+<!-- Status Filter -->
+<div class="watchlist-filter">
+    <a href="/watchlist" class="btn {% if not current_status %}btn-primary{% else %}btn-outline{% endif %}">
+        All
+    </a>
+    <a href="/watchlist?status=want_to_watch" class="btn {% if current_status == 'want_to_watch' %}btn-primary{% else %}btn-outline{% endif %}">
+        📋 Want to Watch
+    </a>
+    <a href="/watchlist?status=watching" class="btn {% if current_status == 'watching' %}btn-primary{% else %}btn-outline{% endif %}">
+        👀 Currently Watching
+    </a>
+    <a href="/watchlist?status=watched" class="btn {% if current_status == 'watched' %}btn-primary{% else %}btn-outline{% endif %}">
+        ✅ Watched
+    </a>
+</div>
+
+<!-- Watchlist Items -->
+{% if watchlist_items %}
+<div class="watchlist-grid">
+    {% for item in watchlist_items %}
+    <div class="watchlist-item">
+        <div class="watchlist-poster">
+            {% if item.poster_url %}
+            <img src="{{ item.poster_url }}" alt="{{ item.title }}"
+                 onerror="this.src='https://via.placeholder.com/200x300?text=No+Poster'">
+            {% else %}
+            <div class="placeholder-poster">{{ config.emoji }}</div>
+            {% endif %}
+            <div class="watchlist-status status-{{ item.status }}">
+                {% if item.status == 'want_to_watch' %}📋 Want to Watch{% endif %}
+                {% if item.status == 'watching' %}👀 Watching{% endif %}
+                {% if item.status == 'watched' %}✅ Watched{% endif %}
+            </div>
+        </div>
+        <div class="watchlist-info">
+            <a href="/movie/{{ item.id }}" class="watchlist-title">{{ item.title }}</a>
+            <div class="watchlist-meta">
+                <span>⭐ {{ item.rating }}</span>
+                <span>{{ item.release_date[:4] }}</span>
+            </div>
+            <div class="watchlist-actions">
+                <button class="btn btn-sm btn-outline" onclick="changeStatus({{ item.id }})">
+                    Change Status
+                </button>
+                <button class="btn btn-sm btn-secondary" onclick="removeFromWatchlist({{ item.id }})">
+                    Remove
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="empty-state">
+    <div class="empty-icon">{{ config.emoji }}</div>
+    <h2>No movies in your watchlist</h2>
+    <p>Start adding movies to track your watching progress!</p>
+    <a href="/browse" class="btn btn-primary">Browse Movies</a>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+function changeStatus(movieId) {
+    const status = prompt("Choose status:\n1. want_to_watch\n2. watching\n3. watched");
+    if (status && ['want_to_watch', 'watching', 'watched'].includes(status)) {
+        fetch(`/watchlist/add/${movieId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ status: status })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+}
+
+function removeFromWatchlist(movieId) {
+    if (confirm("Are you sure you want to remove this movie from your watchlist?")) {
+        fetch(`/watchlist/remove/${movieId}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                location.reload();
+            } else {
+                alert(data.message);
+            }
+        });
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

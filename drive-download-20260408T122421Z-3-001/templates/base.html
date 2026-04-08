@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ config.emoji }} {{ config.name }}{% endblock %}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <header class="header">
+        <div class="container header-content">
+            <div class="logo">
+                <a href="/" style="text-decoration: none;">
+                    <h1>{{ config.emoji }} {{ config.name }}</h1>
+                </a>
+            </div>
+            <nav class="nav">
+                {% if session.get('user_id') %}
+                <a href="/" class="nav-link">Home</a>
+                <a href="/browse" class="nav-link">Browse</a>
+                <a href="/watchlist" class="nav-link">📋 Watchlist</a>
+                <a href="/favorites" class="nav-link">⭐ Favorites</a>
+                <span class="nav-link" style="color: var(--primary-color);">
+                    👤 {{ session.get('username', 'User') }}
+                </span>
+                <a href="/logout" class="nav-link">Logout</a>
+                {% else %}
+                <a href="/login" class="nav-link">Login</a>
+                <a href="/register" class="nav-link">Register</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    <div class="flash-messages">
+                        {% for category, message in messages %}
+                        <div class="flash-message flash-{{ category }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container footer-content">
+            <p>&copy; 2024 {{ config.name }}. {{ config.emoji }} Your Personal Movie Database</p>
+        </div>
+    </footer>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

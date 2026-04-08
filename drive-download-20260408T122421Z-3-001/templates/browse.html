@@ -1,0 +1,151 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Movies - {{ config.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>🎬 Browse Movies</h1>
+    {% if search %}
+    <p>Search results for "{{ search }}"</p>
+    {% else %}
+    <p>Explore our collection of {{ total_items }} movies</p>
+    {% endif %}
+</div>
+
+<!-- Filters -->
+<div class="filters-section">
+    <div class="filters-header">
+        <button class="btn btn-outline btn-sm" onclick="toggleFilters()">
+            🔍 Filters
+        </button>
+        <div class="results-count">{{ total_items }} movies found</div>
+    </div>
+
+    <div class="filters-container" id="filtersContainer">
+        <form method="GET" action="/browse" class="filters-form">
+            <div class="filter-group">
+                <label>Search</label>
+                <input type="text" name="search" value="{{ search }}"
+                       placeholder="Title, director, cast...">
+            </div>
+
+            <div class="filter-group">
+                <label>Genre</label>
+                <select name="genre">
+                    <option value="">All Genres</option>
+                    {% for genre in all_genres %}
+                    <option value="{{ genre.genre }}"
+                            {% if current_genre == genre.genre %}selected{% endif %}>
+                        {{ genre.genre }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Age Rating</label>
+                <select name="age_rating">
+                    <option value="">All Ratings</option>
+                    {% for rating in all_age_ratings %}
+                    <option value="{{ rating.age_rating }}"
+                            {% if current_age_rating == rating.age_rating %}selected{% endif %}>
+                        {{ rating.age_rating }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Year</label>
+                <select name="year">
+                    <option value="">All Years</option>
+                    {% for year in all_years %}
+                    <option value="{{ year.year }}"
+                            {% if current_year == year.year %}selected{% endif %}>
+                        {{ year.year }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div class="filter-group">
+                <label>Sort By</label>
+                <select name="sort">
+                    <option value="rating" {% if current_sort == 'rating' %}selected{% endif %}>
+                        Rating (High to Low)
+                    </option>
+                    <option value="year" {% if current_sort == 'year' %}selected{% endif %}>
+                        Release Date (Newest)
+                    </option>
+                    <option value="title" {% if current_sort == 'title' %}selected{% endif %}>
+                        Title (A-Z)
+                    </option>
+                    <option value="runtime" {% if current_sort == 'runtime' %}selected{% endif %}>
+                        Runtime (Shortest)
+                    </option>
+                </select>
+            </div>
+
+            <div class="filter-actions">
+                <button type="submit" class="btn btn-primary">Apply Filters</button>
+                <a href="/browse" class="btn btn-outline">Clear All</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Movies Grid -->
+<div class="movies-grid">
+    {% for movie in movies %}
+    <div class="movie-card">
+        <div class="movie-poster">
+            {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }}"
+                 onerror="this.src='https://via.placeholder.com/300x450?text=No+Poster'">
+            {% else %}
+            <div class="placeholder-poster">{{ config.emoji }}</div>
+            {% endif %}
+            <div class="movie-rating-badge">⭐ {{ movie.rating }}</div>
+            <div class="movie-overlay">
+                <a href="/movie/{{ movie.id }}" class="btn btn-sm">View Details</a>
+            </div>
+        </div>
+        <div class="movie-info">
+            <h3 class="movie-title">{{ movie.title }}</h3>
+            <div class="movie-meta">
+                <span class="movie-year">{{ movie.release_date[:4] }}</span>
+                <span class="movie-genre">{{ movie.genre }}</span>
+                <span class="movie-runtime">{{ movie.runtime }} min</span>
+            </div>
+            <div class="movie-age-rating rating-{{ movie.age_rating|lower|replace('-', '') }}">
+                {{ movie.age_rating }}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Pagination -->
+{% if total_pages > 1 %}
+<div class="pagination">
+    {% if page > 1 %}
+    <a href="?{% if search %}search={{ search }}&{% endif %}{% if current_genre %}genre={{ current_genre }}&{% endif %}{% if current_age_rating %}age_rating={{ current_age_rating }}&{% endif %}{% if current_year %}year={{ current_year }}&{% endif %}sort={{ current_sort }}&page={{ page - 1 }}"
+       class="btn btn-outline">← Previous</a>
+    {% endif %}
+
+    <span class="pagination-info">Page {{ page }} of {{ total_pages }}</span>
+
+    {% if page < total_pages %}
+    <a href="?{% if search %}search={{ search }}&{% endif %}{% if current_genre %}genre={{ current_genre }}&{% endif %}{% if current_age_rating %}age_rating={{ current_age_rating }}&{% endif %}{% if current_year %}year={{ current_year }}&{% endif %}sort={{ current_sort }}&page={{ page + 1 }}"
+       class="btn btn-outline">Next →</a>
+    {% endif %}
+</div>
+{% endif %}
+
+<script>
+function toggleFilters() {
+    const filters = document.getElementById('filtersContainer');
+    filters.style.display = filters.style.display === 'none' ? 'block' : 'none';
+}
+</script>
+{% endblock %}

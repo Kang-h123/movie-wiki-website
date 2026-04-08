@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}{{ movie.title }} - {{ config.name }}{% endblock %}
+
+{% block content %}
+<div class="movie-detail">
+    <!-- Back Button -->
+    <a href="/browse" class="back-link">← Back to Browse</a>
+
+    <!-- Movie Header -->
+    <div class="movie-header">
+        <div class="movie-poster-large">
+            {% if movie.poster_url %}
+            <img src="{{ movie.poster_url }}" alt="{{ movie.title }}"
+                 onerror="this.src='https://via.placeholder.com/300x450?text=No+Poster'">
+            {% else %}
+            <div class="placeholder-poster-large">{{ config.emoji }}</div>
+            {% endif %}
+        </div>
+
+        <div class="movie-info-large">
+            <h1 class="movie-title-large">{{ movie.title }}</h1>
+
+            <div class="movie-tags">
+                <span class="movie-year">{{ movie.release_date[:4] }}</span>
+                <span class="movie-genre">{{ movie.genre }}</span>
+                <span class="movie-runtime">{{ movie.runtime }} min</span>
+                <div class="movie-age-rating rating-{{ movie.age_rating|lower|replace('-', '') }}">
+                    {{ movie.age_rating }}
+                </div>
+            </div>
+
+            <div class="movie-rating-section">
+                <div class="movie-rating-large">
+                    <span class="rating-score">{{ movie.rating }}</span>
+                    <span class="rating-max">/10</span>
+                </div>
+                <div class="rating-stars">⭐⭐⭐⭐⭐</div>
+            </div>
+
+            {% if session.get('user_id') %}
+            <div class="movie-actions">
+                <button class="btn btn-primary" onclick="openWatchlistModal()">
+                    📋 Add to Watchlist
+                </button>
+                <button class="btn btn-outline" onclick="toggleFavorite()">
+                    {% if is_favorite %}⭐ Remove Favorite{% else %}☆ Add Favorite{% endif %}
+                </button>
+                <a href="/admin/edit/{{ movie.id }}" class="btn btn-secondary">✏️ Edit</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Movie Description -->
+    <div class="movie-description">
+        <h2>📖 Synopsis</h2>
+        <p>{{ movie.description }}</p>
+    </div>
+
+    <!-- Movie Details -->
+    <div class="movie-details-grid">
+        <div class="detail-item">
+            <strong>🎬 Director:</strong>
+            <span>{{ movie.directer if movie.directer else 'N/A' }}</span>
+        </div>
+        <div class="detail-item">
+            <strong>🎭 Cast:</strong>
+            <span>{{ movie.cast if movie.cast else 'N/A' }}</span>
+        </div>
+        <div class="detail-item">
+            <strong>📅 Release Date:</strong>
+            <span>{{ movie.release_date }}</span>
+        </div>
+        <div class="detail-item">
+            <strong>⏱️ Runtime:</strong>
+            <span>{{ movie.runtime }} minutes</span>
+        </div>
+        <div class="detail-item">
+            <strong>🎭 Genre:</strong>
+            <span>{{ movie.genre }}</span>
+        </div>
+        <div class="detail-item">
+            <strong>🔞 Age Rating:</strong>
+            <span>{{ movie.age_rating }}</span>
+        </div>
+        <div class="detail-item">
+            <strong>🌐 Language:</strong>
+            <span>{{ movie.language if movie.language else 'N/A' }}</span>
+        </div>
+        <div class="detail-item">
+            <strong>📝 Subtitles:</strong>
+            <span>{{ movie.subtitle if movie.subtitle else 'N/A' }}</span>
+        </div>
+    </div>
+
+    <!-- Trailer -->
+    {% if movie.trailer_url %}
+    <div class="movie-trailer">
+        <h2>🎥 Trailer</h2>
+        <div class="trailer-container">
+            <iframe src="{{ movie.trailer_url }}"
+                    frameborder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowfullscreen>
+            </iframe>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- User Reviews -->
+    <div class="reviews-section">
+        <h2>💬 User Reviews</h2>
+
+        {% if session.get('user_id') %}
+        <div class="user-review-section">
+            <h3>Your Review</h3>
+            {% if user_review %}
+            <div class="user-existing-review">
+                <div class="review-rating">
+                    Your rating: <strong>{{ user_review.rating }}/10</strong>
+                </div>
+                <div class="review-comment">
+                    {{ user_review.comment if user_review.comment else 'No comment' }}
+                </div>
+                <form method="POST" action="/review/{{ movie.id }}" class="review-form-inline">
+                    <input type="hidden" name="rating" value="{{ user_review.rating }}">
+                    <div class="form-group">
+                        <textarea name="comment" placeholder="Update your review...">{{ user_review.comment if user_review.comment else '' }}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-sm btn-primary">Update Review</button>
+                </form>
+            </div>
+            {% else %}
+            <form method="POST" action="/review/{{ movie.id }}" class="review-form">
+                <div class="form-group">
+                    <label>Rating (1-10)</label>
+                    <select name="rating" required>
+                        <option value="">Select rating...</option>
+                        {% for i in range(1, 11) %}
+                        <option value="{{ i }}">{{ i }}/10</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Review (Optional)</label>
+                    <textarea name="comment" placeholder="Share your thoughts about this movie..."></textarea>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit Review</button>
+            </form>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <div class="reviews-list">
+            {% for review in reviews %}
+            <div class="review-card">
+                <div class="review-header">
+                    <strong>{{ review.username }}</strong>
+                    <div class="review-rating">⭐ {{ review.rating }}/10</div>
+                </div>
+                <div class="review-comment">
+                    {{ review.comment if review.comment else 'No comment provided.' }}
+                </div>
+                <div class="review-date">
+                    {{ review.created_at }}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Related Movies -->
+    {% if related %}
+    <div class="related-movies">
+        <h2>🎬 More {{ movie.genre }} Movies</h2>
+        <div class="movies-grid">
+            {% for rel_movie in related %}
+            <div class="movie-card">
+                <div class="movie-poster">
+                    {% if rel_movie.poster_url %}
+                    <img src="{{ rel_movie.poster_url }}" alt="{{ rel_movie.title }}"
+                         onerror="this.src='https://via.placeholder.com/300x450?text=No+Poster'">
+                    {% else %}
+                    <div class="placeholder-poster">{{ config.emoji }}</div>
+                    {% endif %}
+                    <div class="movie-overlay">
+                        <a href="/movie/{{ rel_movie.id }}" class="btn btn-sm">View</a>
+                    </div>
+                </div>
+                <div class="movie-info">
+                    <h3 class="movie-title">{{ rel_movie.title }}</h3>
+                    <div class="movie-meta">
+                        <span class="movie-rating">⭐ {{ rel_movie.rating }}</span>
+                        <span class="movie-year">{{ rel_movie.release_date[:4] }}</span>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<!-- Watchlist Modal -->
+{% if session.get('user_id') %}
+<div id="watchlistModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeWatchlistModal()">&times;</span>
+        <div class="modal-header">
+            <h2>🎬 Add to Watchlist</h2>
+            <p>Choose your watching status</p>
+        </div>
+        <div class="modal-body">
+            <div class="watchlist-options">
+                <button class="watchlist-btn want-to-watch" onclick="addToWatchlist('want_to_watch')">
+                    <div class="icon">📋</div>
+                    <div class="text">
+                        <span class="title">Want to Watch</span>
+                        <span class="description">Add to your watchlist</span>
+                    </div>
+                </button>
+                <button class="watchlist-btn watching" onclick="addToWatchlist('watching')">
+                    <div class="icon">👀</div>
+                    <div class="text">
+                        <span class="title">Currently Watching</span>
+                        <span class="description">In progress now</span>
+                    </div>
+                </button>
+                <button class="watchlist-btn watched" onclick="addToWatchlist('watched')">
+                    <div class="icon">✅</div>
+                    <div class="text">
+                        <span class="title">Watched</span>
+                        <span class="description">Already seen it!</span>
+                    </div>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+{% block extra_js %}
+<script>
+function showNotification(type, title, message) {
+    const notification = document.createElement('div');
+    notification.className = `notification ${type}`;
+
+    const icons = {
+        success: '✓',
+        error: '✕',
+        info: 'ℹ'
+    };
+
+    notification.innerHTML = `
+        <div class="notification-icon">${icons[type]}</div>
+        <div class="notification-content">
+            <div class="notification-title">${title}</div>
+            <div class="notification-message">${message}</div>
+        </div>
+        <div class="notification-close" onclick="this.parentElement.remove()">×</div>
+    `;
+
+    document.body.appendChild(notification);
+
+    setTimeout(() => {
+        notification.classList.add('hiding');
+        setTimeout(() => notification.remove(), 300);
+    }, 3000);
+}
+
+function openWatchlistModal() {
+    document.getElementById('watchlistModal').style.display = 'block';
+}
+
+function closeWatchlistModal() {
+    document.getElementById('watchlistModal').style.display = 'none';
+}
+
+function addToWatchlist(status) {
+    fetch('/watchlist/add/{{ movie.id }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ status: status })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('success', 'Success!', data.message);
+            closeWatchlistModal();
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('error', 'Error', data.message);
+        }
+    });
+}
+
+function toggleFavorite() {
+    fetch('/favorites/toggle/{{ movie.id }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showNotification('success', 'Success!', data.message);
+            setTimeout(() => location.reload(), 1500);
+        } else {
+            showNotification('error', 'Error', data.message);
+        }
+    });
+}
+
+// Close modal when clicking outside
+window.onclick = function(event) {
+    const modal = document.getElementById('watchlistModal');
+    if (event.target == modal) {
+        modal.style.display = 'none';
+    }
+}
+</script>
+{% endblock %}
+{% endblock %}

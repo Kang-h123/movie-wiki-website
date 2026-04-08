@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block title %}Home - {{ config.name }}{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero">
+    <div class="hero-content">
+        <h1>{{ config.emoji }} Welcome to {{ config.name }}</h1>
+        <p>Your personal movie database with watchlists, reviews, and favorites</p>
+        <div class="hero-buttons">
+            <a href="/browse" class="btn btn-secondary">Browse Movies 🎬</a>
+            {% if not session.get('user_id') %}
+            <a href="/register" class="btn btn-outline">Join Now 🚀</a>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<!-- Stats Section -->
+<div class="stats-section">
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-value">{{ total_movies }}</div>
+            <div class="stat-label">Movies</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ avg_rating }} ⭐</div>
+            <div class="stat-label">Average Rating</div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-value">{{ genres|length }}</div>
+            <div class="stat-label">Genres</div>
+        </div>
+    </div>
+</div>
+
+<!-- Top Rated Movies -->
+<div class="section">
+    <div class="section-header">
+        <h2>🏆 Top Rated Movies</h2>
+        <p>Highest rated films of all time</p>
+    </div>
+
+    <div class="movies-grid">
+        {% for movie in top_movies %}
+        <div class="movie-card">
+            <div class="movie-poster">
+                {% if movie.poster_url %}
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" onerror="this.src='https://via.placeholder.com/300x450?text=No+Poster'">
+                {% else %}
+                <div class="placeholder-poster">{{ config.emoji }}</div>
+                {% endif %}
+                <div class="movie-overlay">
+                    <a href="/movie/{{ movie.id }}" class="btn btn-sm">View Details</a>
+                </div>
+            </div>
+            <div class="movie-info">
+                <h3 class="movie-title">{{ movie.title }}</h3>
+                <div class="movie-meta">
+                    <span class="movie-rating">⭐ {{ movie.rating }}</span>
+                    <span class="movie-year">{{ movie.release_date[:4] }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Latest Movies -->
+<div class="section">
+    <div class="section-header">
+        <h2>🆕 Latest Movies</h2>
+        <p>Recently added to our database</p>
+    </div>
+
+    <div class="movies-grid">
+        {% for movie in latest_movies %}
+        <div class="movie-card">
+            <div class="movie-poster">
+                {% if movie.poster_url %}
+                <img src="{{ movie.poster_url }}" alt="{{ movie.title }}" onerror="this.src='https://via.placeholder.com/300x450?text=No+Poster'">
+                {% else %}
+                <div class="placeholder-poster">{{ config.emoji }}</div>
+                {% endif %}
+                <div class="movie-overlay">
+                    <a href="/movie/{{ movie.id }}" class="btn btn-sm">View Details</a>
+                </div>
+            </div>
+            <div class="movie-info">
+                <h3 class="movie-title">{{ movie.title }}</h3>
+                <div class="movie-meta">
+                    <span class="movie-rating">⭐ {{ movie.rating }}</span>
+                    <span class="movie-year">{{ movie.release_date[:4] }}</span>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- Browse All Button -->
+<div class="text-center">
+    <a href="/browse" class="btn btn-primary">Browse All Movies →</a>
+</div>
+
+<!-- Genres -->
+<div class="section">
+    <div class="section-header">
+        <h3>🎭 Browse by Genre</h3>
+    </div>
+    <div class="genres-list">
+        {% for genre in genres %}
+        <a href="/browse?genre={{ genre.genre }}" class="genre-tag">
+            {{ genre.genre }}
+        </a>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

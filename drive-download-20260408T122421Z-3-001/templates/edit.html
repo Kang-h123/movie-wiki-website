@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+
+{% block title %}Edit Movie - {{ config.name }}{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1>✏️ Edit Movie</h1>
+    <p>Edit movie information</p>
+</div>
+
+<div class="form-container">
+    <form method="POST" action="/admin/edit/{{ movie.id }}" class="admin-form">
+        <div class="form-section">
+            <h3>Basic Information</h3>
+            <div class="form-group">
+                <label for="title">Title *</label>
+                <input type="text" id="title" name="title" required
+                       value="{{ movie.title }}"
+                       placeholder="Enter movie title">
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description *</label>
+                <textarea id="description" name="description" required rows="4"
+                          placeholder="Enter movie description/synopsis">{{ movie.description }}</textarea>
+            </div>
+
+            <div class="form-group">
+                <label for="genre">Genre *</label>
+                <input type="text" id="genre" name="genre" required
+                       value="{{ movie.genre }}"
+                       placeholder="e.g., Drama, Action, Comedy">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="release_date">Release Date *</label>
+                    <input type="date" id="release_date" name="release_date" required
+                           value="{{ movie.release_date }}">
+                </div>
+
+                <div class="form-group">
+                    <label for="runtime">Runtime (minutes) *</label>
+                    <input type="number" id="runtime" name="runtime" required min="1"
+                           value="{{ movie.runtime }}"
+                           placeholder="e.g., 120">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="rating">Rating (0-10) *</label>
+                    <input type="number" id="rating" name="rating" required min="0" max="10" step="0.1"
+                           value="{{ movie.rating }}"
+                           placeholder="e.g., 8.5">
+                </div>
+
+                <div class="form-group">
+                    <label for="age_rating">Age Rating *</label>
+                    <select id="age_rating" name="age_rating" required>
+                        <option value="G" {% if movie.age_rating == 'G' %}selected{% endif %}>G (General Audiences)</option>
+                        <option value="PG" {% if movie.age_rating == 'PG' %}selected{% endif %}>PG (Parental Guidance)</option>
+                        <option value="PG-13" {% if movie.age_rating == 'PG-13' %}selected{% endif %}>PG-13 (Parents Strongly Cautioned)</option>
+                        <option value="R" {% if movie.age_rating == 'R' %}selected{% endif %}>R (Restricted)</option>
+                        <option value="NC-17" {% if movie.age_rating == 'NC-17' %}selected{% endif %}>NC-17 (Adults Only)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Credits</h3>
+            <div class="form-group">
+                <label for="director">Director</label>
+                <input type="text" id="director" name="director"
+                       value="{{ movie.director }}"
+                       placeholder="e.g., Christopher Nolan">
+            </div>
+
+            <div class="form-group">
+                <label for="cast">Cast</label>
+                <textarea id="cast" name="cast" rows="3"
+                          placeholder="e.g., Leonardo DiCaprio, Joseph Gordon-Levitt, Ellen Page">{{ movie.cast }}</textarea>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h3>Media & Language</h3>
+            <div class="form-group">
+                <label for="poster_url">Poster URL</label>
+                <input type="url" id="poster_url" name="poster_url"
+                       value="{{ movie.poster_url }}"
+                       placeholder="https://example.com/poster.jpg">
+            </div>
+
+            <div class="form-group">
+                <label for="trailer_url">Trailer URL (YouTube embed)</label>
+                <input type="url" id="trailer_url" name="trailer_url"
+                       value="{{ movie.trailer_url }}"
+                       placeholder="https://www.youtube.com/embed/VIDEO_ID">
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="language">Language</label>
+                    <input type="text" id="language" name="language"
+                           value="{{ movie.language }}"
+                           placeholder="e.g., English">
+                </div>
+
+                <div class="form-group">
+                    <label for="subtitle">Subtitles</label>
+                    <input type="text" id="subtitle" name="subtitle"
+                           value="{{ movie.subtitle }}"
+                           placeholder="e.g., English, Spanish">
+                </div>
+            </div>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Update Movie</button>
+            <a href="/movie/{{ movie.id }}" class="btn btn-outline">Cancel</a>
+            <a href="/admin/delete/{{ movie.id }}" class="btn btn-secondary"
+               onclick="return confirm('Are you sure you want to delete this movie?')">
+                🗑️ Delete Movie
+            </a>
+        </div>
+    </form>
+</div>
+{% endblock %}
